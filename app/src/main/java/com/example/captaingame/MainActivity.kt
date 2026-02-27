@@ -4,22 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.captaingame.ui.theme.CaptainGameTheme
 import kotlin.random.Random
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Arrangement
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,64 +24,79 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    @Composable
-    fun CaptainGame() {
-        val treasuresFound = remember { mutableStateOf(0) }
-        val direction = remember {mutableStateOf("North") }
-        val stormOrTreasure = remember {mutableStateOf("")}
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+}
 
-            Text("Treasures Found: ${treasuresFound.value}")
-            Text("Current Direction: ${direction.value}")
-            Text("RESULT : ${stormOrTreasure.value}")
+@Composable
+fun CaptainGame() {
+
+    var treasuresFound by remember { mutableStateOf(0) }
+    var direction by remember { mutableStateOf("North") }
+    var result by remember { mutableStateOf("") }
+    var lives by remember { mutableStateOf(3) }
+    var gameOver by remember { mutableStateOf(false) }
+
+    fun sail(selectedDirection: String) {
+
+        if (gameOver) return
+
+        direction = selectedDirection
+
+        if (Random.nextBoolean()) {
+            treasuresFound++
+            result = "🎉 WE FOUND A TREASURE!"
+        } else {
+            lives--
+            result = "⛈ STORM AHEAD!"
+        }
+
+        if (treasuresFound >= 5) {
+            result = "🏆 YOU WIN THE GAME!"
+            gameOver = true
+        }
+
+        if (lives <= 0) {
+            result = "💀 GAME OVER!"
+            gameOver = true
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        Text("Treasures Found: $treasuresFound")
+        Text("Lives Left: $lives")
+        Text("Current Direction: $direction")
+        Text("Result: $result")
+
+        Button(onClick = { sail("East") }, enabled = !gameOver) {
+            Text("Sail East")
+        }
+
+        Button(onClick = { sail("West") }, enabled = !gameOver) {
+            Text("Sail West")
+        }
+
+        Button(onClick = { sail("North") }, enabled = !gameOver) {
+            Text("Sail North")
+        }
+
+        Button(onClick = { sail("South") }, enabled = !gameOver) {
+            Text("Sail South")
+        }
+
+        if (gameOver) {
             Button(onClick = {
-                direction.value = "East"
-                if(Random.nextBoolean()){
-                    treasuresFound.value += 1
-                    stormOrTreasure.value = "WE FOUND A TREASURE!!!"
-                } else{
-                    stormOrTreasure.value = "STORM AHEAD!!"
-                }
-            }){
-                Text("Sail East")
-            }
-            Button(onClick = {
-                direction.value = "West"
-                if(Random.nextBoolean()){
-                    treasuresFound.value += 1
-                    stormOrTreasure.value = "WE FOUND A TREASURE!!!"
-                } else{
-                    stormOrTreasure.value = "STORM AHEAD!!"
-                }
-            }){
-                Text("Sail West")
-            }
-            Button(onClick = {
-                direction.value = "North"
-                if(Random.nextBoolean()){
-                    treasuresFound.value += 1
-                    stormOrTreasure.value = "WE FOUND A TREASURE!!!"
-                } else{
-                    stormOrTreasure.value = "STORM AHEAD!!"
-                }
-            }){
-                Text("Sail North")
-            }
-            Button(onClick = {
-                direction.value = "South"
-                if(Random.nextBoolean()){
-                    treasuresFound.value += 1
-                    stormOrTreasure.value = "WE FOUND A TREASURE!!!"
-                } else{
-                    stormOrTreasure.value = "STORM AHEAD!!"
-                }
-            }){
-                Text("Sail South")
+                treasuresFound = 0
+                lives = 3
+                direction = "North"
+                result = ""
+                gameOver = false
+            }) {
+                Text("Restart Game")
             }
         }
     }
