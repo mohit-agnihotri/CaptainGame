@@ -10,13 +10,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.captaingame.ui.theme.CaptainGameTheme
@@ -44,7 +47,6 @@ fun CaptainGame() {
 
     var videoViewRef by remember { mutableStateOf<VideoView?>(null) }
 
-    // 🌊 Wave Sound
     val wavePlayer = remember {
         MediaPlayer.create(context, R.raw.waves).apply {
             isLooping = true
@@ -52,7 +54,6 @@ fun CaptainGame() {
         }
     }
 
-    // 🎵 Effect Sounds
     val treasurePlayer = remember { MediaPlayer.create(context, R.raw.treasure) }
     val stormPlayer = remember { MediaPlayer.create(context, R.raw.storm) }
     val gameOverPlayer = remember { MediaPlayer.create(context, R.raw.gameover) }
@@ -146,7 +147,7 @@ fun CaptainGame() {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // 🎬 Video Background
+        // 🎬 Background Video
         AndroidView(
             factory = {
                 VideoView(it).apply {
@@ -161,67 +162,97 @@ fun CaptainGame() {
             modifier = Modifier.fillMaxSize()
         )
 
-        Column(
+        // 🌑 Dark overlay for readability
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color.Black.copy(alpha = 0.45f))
+        )
+
+        // 🧊 Glass style panel
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .align(Alignment.Center),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Black.copy(alpha = 0.35f)
+            ),
+            shape = RoundedCornerShape(24.dp)
         ) {
 
-            Text(
-                text = "🏴‍☠️ Captain Treasure Hunt",
-                style = MaterialTheme.typography.headlineLarge,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("Treasures Found: $treasuresFound", color = Color.White)
-            Text("Lives Left: $lives", color = Color.White)
-            Text("Current Direction: $direction", color = Color.White)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AnimatedVisibility(
-                visible = result.isNotEmpty(),
-                enter = fadeIn() + scaleIn()
+            Column(
+                modifier = Modifier
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
                 Text(
-                    text = result,
-                    color = resultColor,
-                    style = MaterialTheme.typography.headlineMedium
+                    text = "🏴‍☠️ Captain Treasure Hunt",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            listOf("East", "West", "North", "South").forEach {
-                Button(
-                    onClick = { sail(it) },
-                    enabled = !gameOver,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                Text("Treasures Found: $treasuresFound", color = Color.White)
+                Text("Lives Left: $lives", color = Color.White)
+                Text("Direction: $direction", color = Color.White)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AnimatedVisibility(
+                    visible = result.isNotEmpty(),
+                    enter = fadeIn() + scaleIn()
                 ) {
-                    Text("Sail $it")
+                    Text(
+                        text = result,
+                        color = resultColor,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            if (gameOver) {
-                Button(
-                    onClick = {
-                        treasuresFound = 0
-                        lives = 3
-                        direction = "North"
-                        result = ""
-                        gameOver = false
-
-                        stopAllEffects()
-                        startBackground()
+                listOf("East", "West", "North", "South").forEach {
+                    Button(
+                        onClick = { sail(it) },
+                        enabled = !gameOver,
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF1E88E5)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                    ) {
+                        Text("Sail $it")
                     }
-                ) {
-                    Text("🔄 Restart Game")
+                }
+
+                if (gameOver) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            treasuresFound = 0
+                            lives = 3
+                            direction = "North"
+                            result = ""
+                            gameOver = false
+
+                            stopAllEffects()
+                            startBackground()
+                        },
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF43A047)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🔄 Restart Game")
+                    }
                 }
             }
         }
